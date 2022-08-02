@@ -1,2 +1,2 @@
 # youtube-first-comment
-Attempts to make the first comment on a new YouTube video
+Attempts to post the first comment on a new YouTube video
