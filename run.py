@@ -1,5 +1,6 @@
 import pickle, ciso8601, time, urllib.request
 from apiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 BUCKET_NAME = 'complymate'
 TOKEN_ID = 1
@@ -14,6 +15,7 @@ urllib.request.urlretrieve(f'https://{BUCKET_NAME}.s3.amazonaws.com/youtube/{con
 uploads_list_id, threshold_datetime = [line.decode('utf-8').strip() for line in open(config_filename, 'rb').readlines()]
 
 while True:
+    time.sleep(1)
     playlist_items_response = service.playlistItems().list(
         playlistId=uploads_list_id,
         part="snippet",
@@ -34,7 +36,9 @@ while True:
                 }
             }
         }
-        service.commentThreads().insert(part='snippet', body=body).execute()
+        try:
+            service.commentThreads().insert(part='snippet', body=body).execute()
+        except HttpError:
+            continue
         print(f'Posted comment from token id: {TOKEN_ID} on {video_id}')
         break
-    time.sleep(1)
