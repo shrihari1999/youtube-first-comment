@@ -11,7 +11,7 @@ service = build('youtube', 'v3', credentials=credentials)
 
 config_filename = 'config.txt'
 urllib.request.urlretrieve(f'https://{BUCKET_NAME}.s3.amazonaws.com/youtube/{config_filename}', config_filename)
-uploads_list_id, threshold_datetime = [line.decode('utf-8') for line in open(config_filename, 'rb').readlines()]
+uploads_list_id, threshold_datetime = [line.decode('utf-8').strip() for line in open(config_filename, 'rb').readlines()]
 
 while True:
     playlist_items_response = service.playlistItems().list(
