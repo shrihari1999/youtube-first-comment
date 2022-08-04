@@ -1,6 +1,5 @@
 import pickle, ciso8601, time, urllib.request
 from apiclient.discovery import build
-from datetime import datetime, timezone
 
 BUCKET_NAME = 'complymate'
 TOKEN_ID = 1
@@ -10,9 +9,9 @@ urllib.request.urlretrieve(f'https://{BUCKET_NAME}.s3.amazonaws.com/youtube/pick
 credentials = pickle.load(open(filename, 'rb'))
 service = build('youtube', 'v3', credentials=credentials)
 
-upload_list_filename = 'upload_list_id.txt'
-urllib.request.urlretrieve(f'https://{BUCKET_NAME}.s3.amazonaws.com/youtube/{upload_list_filename}', upload_list_filename)
-uploads_list_id = open(upload_list_filename, 'rb').readline().decode('utf-8')
+config_filename = 'config.txt'
+urllib.request.urlretrieve(f'https://{BUCKET_NAME}.s3.amazonaws.com/youtube/{config_filename}', config_filename)
+uploads_list_id, threshold_datetime = [line.decode('utf-8') for line in open(config_filename, 'rb').readlines()]
 
 while True:
     playlist_items_response = service.playlistItems().list(
@@ -23,7 +22,7 @@ while True:
     ).execute()
 
     playlist_item_snippet = playlist_items_response['items'][0]['snippet']
-    if ciso8601.parse_datetime(playlist_item_snippet['publishedAt']) > datetime(2022, 8, 4, 19, 59, 59, tzinfo=timezone.utc):
+    if ciso8601.parse_datetime(playlist_item_snippet['publishedAt']) > ciso8601.parse_datetime(threshold_datetime):
         video_id = playlist_item_snippet['resourceId']['videoId']
         body = {
             "snippet": {
